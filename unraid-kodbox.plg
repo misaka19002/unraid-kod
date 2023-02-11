@@ -4,11 +4,11 @@
 <!ENTITY name      "KodBox">
 <!ENTITY author    "rainday">
 <!ENTITY version   "1.36">
-<!ENTITY pluginURL "&host;/plg/KodExplorer.plg">
+<!ENTITY pluginURL "https://raw.githubusercontent.com/misaka19002/unraid-kodbox/main/unraid-kodbox.plg">
 <!ENTITY kodpagename "kod">
-<!ENTITY kodpath   "/mnt/user/appdata/kodbox">
+<!ENTITY kodpath   "/mnt/user/appdata/kod">
 <!ENTITY kodwebpath "/usr/local/emhttp/&kodpagename;">
-<!ENTITY koddownloadurl    "https://static.kodcloud.com/update/download/kodbox.1.36.zip">
+<!ENTITY koddownloadurl    "https://static.kodcloud.com/update/download/kodbox.&version;.zip">
 ]>
 
 <PLUGIN  name="&name;"
@@ -91,7 +91,7 @@ Tabs='true'
     function print_not_install()
     {
         echo "&lt;div style='margin: 20px 20px 20px 20px'&gt;".
-             "&lt;h1&gt;&lt;br /&gt;Put kodexplorer files in &kodpath; folder to enable kod explorer.&lt;br /&gt;".
+             "&lt;h1&gt;&lt;br /&gt;Put KodBox files in &kodpath; folder to enable kod explorer.&lt;br /&gt;".
              "You can download the files from &lt;a href='&koddownloadurl;'&gt;here&lt;/a&gt;.&lt;br /&gt;".
              "&lt;/h1&gt;&lt;/div&gt;";
     }
@@ -152,15 +152,15 @@ if [[ -d /mnt/user/appdata ]]; then
 	if [[ ! -d &kodpath; ]]; then
 		unzipkod /boot/config/plugins/&name;/&name;.zip 0;
 		unzipkod /tmp/&name;.zip 1
-		unzipkod /boot/KodExplorer.zip 1
+		unzipkod /boot/KodBox.zip 1
 		unzipkod /boot/kod.zip 1
 		unzipkod /boot/config/plugins/&name;/&name;.zip 1
 		unzipkod /boot/config/plugins/&name;/&name;.zip 1
 		if [[ ! -d &kodpath; ]]; then
 		    echo "Download Package &koddownloadurl;"
 		    cd /tmp
-		    wget &koddownloadurl;
-		    unzipkod /tmp/KodExplorer.zip 1
+		    wget -cO KodBox.zip &koddownloadurl;
+		    unzipkod /tmp/KodBox.zip 1
 		fi
 	fi
 fi
