@@ -1,0 +1,195 @@
+<?xml version='1.0' standalone='yes'?>
+
+<!DOCTYPE PLUGIN [
+<!ENTITY name      "KodBox">
+<!ENTITY author    "rainday">
+<!ENTITY version   "1.36">
+<!ENTITY pluginURL "&host;/plg/KodExplorer.plg">
+<!ENTITY kodpagename "kod">
+<!ENTITY kodpath   "/mnt/user/appdata/kodbox">
+<!ENTITY kodwebpath "/usr/local/emhttp/&kodpagename;">
+<!ENTITY koddownloadurl    "https://static.kodcloud.com/update/download/kodbox.1.36.zip">
+]>
+
+<PLUGIN  name="&name;"
+         author="&author;"
+         version="&version;"
+         category="File Manager"
+         launch="&kodpagename;"
+         pluginURL="&pluginURL;">
+
+<CHANGES>
+<![CDATA[
+###2023.02.11
+ - 更新自kod插件至 kodbox 1.36
+ - 修改UNRAID自带的文件浏览界面跳转到KodBox的文件浏览界面。
+ - 插件修改自zxrobin大佬的作品（贴吧地址：https://tieba.baidu.com/p/7314539346）
+ - 原插件地址：http://plg.unraid.site:8/plg/KodExplorer.plg
+]]>
+</CHANGES>
+
+<FILE Name="/tmp/&name;-cleaner.sh" Run="/bin/bash" Remark="清理之前安装的残留文件。">
+<INLINE>
+rm -rf /tmp/&name;*
+</INLINE>
+</FILE>
+
+<FILE Name="/tmp/&name;.sh" Run="/bin/bash" Method="install" Remark="清空和创建安装目录。">
+<INLINE>
+rm -rf "/tmp/&name;.sh"
+rm -rf "/usr/local/emhttp/plugins/&name;"
+rm -rf "/etc/nginx/conf.d/&name;.item"
+mkdir -p "/usr/local/emhttp/plugins/&name;"
+mkdir -p "/boot/config/plugins/&name;"
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/&name;/README.md" Method="install" Remark="说明">
+<INLINE>
+####&name;####
+KodBox插件版，不额外占用系统资源，权限更高，可以管理整个系统的文件。
+</INLINE>
+</FILE>
+
+<FILE Name="/usr/local/emhttp/plugins/&name;/&kodpagename;.page" Method="install" Remark="Unraid 网页界面入口">
+<INLINE>
+Menu='Tasks:991'
+Name='&kodpagename;'
+Type='xmenu'
+Tabs='true'
+---
+&lt;?
+    if (file_exists("&kodwebpath;/index.php")){
+        print_redirect();
+    }
+    elseif (is_dir("&kodwebpath;")==false)
+    {
+        if (is_dir("&kodpath;")){
+            exec("ln -s &kodpath; &kodwebpath;");
+            if (file_exists("&kodwebpath;/index.php")){
+                print_redirect();
+            }
+            else
+            {
+                print_not_install();
+            }
+        }
+        else
+        {
+            print_not_install();
+        }
+    }
+    else
+    {
+        print_not_install();
+    }
+
+    function print_redirect(){
+        echo "&lt;script type='text/javascript'&gt;location.href='/&kodpagename;/index.php';&lt;/script&gt;";
+    }
+
+    function print_not_install()
+    {
+        echo "&lt;div style='margin: 20px 20px 20px 20px'&gt;".
+             "&lt;h1&gt;&lt;br /&gt;Put kodexplorer files in &kodpath; folder to enable kod explorer.&lt;br /&gt;".
+             "You can download the files from &lt;a href='&koddownloadurl;'&gt;here&lt;/a&gt;.&lt;br /&gt;".
+             "&lt;/h1&gt;&lt;/div&gt;";
+    }
+?&gt;
+</INLINE>
+</FILE>
+
+<FILE Name="/etc/nginx/conf.d/&name;.item" Method="install" Remark="Unraid 网页界面入口">
+<INLINE>
+	location ~ /&kodpagename;/(.*)\.php$ {
+		allow all;
+		include fastcgi_params;
+	}
+	location = /&kodpagename;/ {
+        allow all;
+        try_files /&kodpagename;/index.php /webGui/template.php$is_args$args;
+        include fastcgi_params;
+	}
+	location ~ /&kodpagename;/ {
+		allow all;
+	}
+	location = /&kodpagename; {
+        return 302 $scheme://$http_host/&kodpagename;/;
+	}
+</INLINE>
+</FILE>
+
+<FILE Name="/tmp/&name;.sh" Run="/bin/bash" Remark="主要安装脚本" method="install">
+<INLINE>
+
+rm -rf "/tmp/&name;.sh"
+
+function unzipkod()
+{
+    if [[ ! -d &kodpath; ]]; then
+        if [[ -e $1 ]]; then
+            if (( $2 != 0 )); then
+                cp $1 /boot/config/plugins/&name;
+    		fi;
+    		mkdir &kodpath;
+    		if [[ -d &kodpath; ]]; then
+    			cd &kodpath;
+    			echo  -n "Extracting $1..."
+    			unzip -q $1
+    			echo "OK!"
+    		fi
+    	fi
+    	if [[ ! -d &kodwebpath; ]]; then
+    	    ln -s &kodpath; &kodwebpath;
+    	    return 1;
+    	else
+    	    return 1;
+    	fi
+	fi
+}
+
+if [[ -d /mnt/user/appdata ]]; then
+	if [[ ! -d &kodpath; ]]; then
+		unzipkod /boot/config/plugins/&name;/&name;.zip 0;
+		unzipkod /tmp/&name;.zip 1
+		unzipkod /boot/KodExplorer.zip 1
+		unzipkod /boot/kod.zip 1
+		unzipkod /boot/config/plugins/&name;/&name;.zip 1
+		unzipkod /boot/config/plugins/&name;/&name;.zip 1
+		if [[ ! -d &kodpath; ]]; then
+		    echo "Download Package &koddownloadurl;"
+		    cd /tmp
+		    wget &koddownloadurl;
+		    unzipkod /tmp/KodExplorer.zip 1
+		fi
+	fi
+fi
+if ! grep -wq "include \/etc\/nginx\/conf.d\/\*.item;" /etc/rc.d/rc.nginx; then
+    echo "正在添加Nginx个人网站入口..."
+    sed "s/location \/login {/include \/etc\/nginx\/conf.d\/\*.item;\n\t\tlocation \/login {/" /etc/rc.d/rc.nginx -i
+fi
+if ! grep -wq "&lt;?PHP echo \"&lt;script type='text/javascript'&gt;location.href='/kod/index.php?explorer&amp;path=\". \$_GET\[\"dir\"\] .\"';&lt;/script&gt;\";exit;" /usr/local/emhttp/webGui/Browse.page; then
+    echo "正在修改浏览文件跳转..."
+    sed "s/&lt;?PHP/&lt;?PHP echo \"&lt;script type='text\/javascript'&gt;location.href='\/kod\/index.php?explorer\&amp;path=\". \$_GET\[\"dir\"\] .\"';&lt;\/script&gt;\";exit;/" /usr/local/emhttp/webGui/Browse.page -i
+fi
+/etc/rc.d/rc.nginx reload
+exit 0
+</INLINE>
+</FILE>
+
+<FILE Name="/tmp/&name;-remove.sh" Run="/bin/bash" Method="remove" Remark="删除插件代码。仅移除入口，不会移除个人数据。">
+<INLINE>
+if [[ -d /usr/local/emhttp/plugins/&name; ]]; then
+    rm -rf /usr/local/emhttp/plugins/&name;
+fi
+rm -rf "/tmp/&name;-remove.sh"
+if [[ -d &kodwebpath; ]]; then
+    rm -rf &kodwebpath;
+fi
+echo "正在还原浏览文件跳转..."
+sed "s/&lt;?PHP echo \"&lt;script type='text\/javascript'&gt;location.href='\/kod\/index.php?explorer\&amp;path=\". \$_GET\[\"dir\"\] .\"';&lt;\/script&gt;\";exit;/&lt;?PHP/" /usr/local/emhttp/webGui/Browse.page -i
+exit 0
+</INLINE>
+</FILE>
+
+</PLUGIN>
