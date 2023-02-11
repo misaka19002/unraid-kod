@@ -1,14 +1,14 @@
 <?xml version='1.0' standalone='yes'?>
 
 <!DOCTYPE PLUGIN [
-<!ENTITY name      "KodBox">
+<!ENTITY name      "KodExplorer">
 <!ENTITY author    "rainday">
-<!ENTITY version   "1.36">
-<!ENTITY pluginURL "https://raw.githubusercontent.com/misaka19002/unraid-kodbox/main/unraid-kodbox.plg">
+<!ENTITY version   "4.50">
+<!ENTITY pluginURL "https://raw.githubusercontent.com/misaka19002/unraid-kod/kodexplorer-4.50/unraid-kod.plg">
 <!ENTITY kodpagename "kod">
 <!ENTITY kodpath   "/mnt/user/appdata/kod">
 <!ENTITY kodwebpath "/usr/local/emhttp/&kodpagename;">
-<!ENTITY koddownloadurl    "https://static.kodcloud.com/update/download/kodbox.&version;.zip">
+<!ENTITY koddownloadurl    "https://static.kodcloud.com/update/download/kodexplorer4.50.zip">
 ]>
 
 <PLUGIN  name="&name;"
@@ -21,8 +21,8 @@
 <CHANGES>
 <![CDATA[
 ###2023.02.11
- - 更新自kod插件至 kodbox 1.36
- - 修改UNRAID自带的文件浏览界面跳转到KodBox的文件浏览界面。
+ - 更新自kod插件至 kodExplorer 4.50
+ - 修改UNRAID自带的文件浏览界面跳转到 KodExplorer 的文件浏览界面。
  - 插件修改自zxrobin大佬的作品（贴吧地址：https://tieba.baidu.com/p/7314539346）
  - 原插件地址：http://plg.unraid.site:8/plg/KodExplorer.plg
 ]]>
@@ -47,7 +47,7 @@ mkdir -p "/boot/config/plugins/&name;"
 <FILE Name="/usr/local/emhttp/plugins/&name;/README.md" Method="install" Remark="说明">
 <INLINE>
 ####&name;####
-KodBox插件版，不额外占用系统资源，权限更高，可以管理整个系统的文件。
+KodExplorer 插件版，不额外占用系统资源，权限更高，可以管理整个系统的文件。
 </INLINE>
 </FILE>
 
@@ -91,7 +91,7 @@ Tabs='true'
     function print_not_install()
     {
         echo "&lt;div style='margin: 20px 20px 20px 20px'&gt;".
-             "&lt;h1&gt;&lt;br /&gt;Put KodBox files in &kodpath; folder to enable kod explorer.&lt;br /&gt;".
+             "&lt;h1&gt;&lt;br /&gt;Put KodExplorer files in &kodpath; folder to enable kod explorer.&lt;br /&gt;".
              "You can download the files from &lt;a href='&koddownloadurl;'&gt;here&lt;/a&gt;.&lt;br /&gt;".
              "&lt;/h1&gt;&lt;/div&gt;";
     }
@@ -152,15 +152,15 @@ if [[ -d /mnt/user/appdata ]]; then
 	if [[ ! -d &kodpath; ]]; then
 		unzipkod /boot/config/plugins/&name;/&name;.zip 0;
 		unzipkod /tmp/&name;.zip 1
-		unzipkod /boot/KodBox.zip 1
+		unzipkod /boot/KodExplorer.zip 1
 		unzipkod /boot/kod.zip 1
 		unzipkod /boot/config/plugins/&name;/&name;.zip 1
 		unzipkod /boot/config/plugins/&name;/&name;.zip 1
 		if [[ ! -d &kodpath; ]]; then
 		    echo "Download Package &koddownloadurl;"
 		    cd /tmp
-		    wget -cO KodBox.zip &koddownloadurl;
-		    unzipkod /tmp/KodBox.zip 1
+		    wget -cO KodExplorer.zip &koddownloadurl;
+		    unzipkod /tmp/KodExplorer.zip 1
 		fi
 	fi
 fi
